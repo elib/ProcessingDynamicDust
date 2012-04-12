@@ -77,60 +77,88 @@ void calculateGeneration()
            
            //apply DANIEL THEORY
            //float neighboringDustDiff = 0;
-           float transferFactor = 50;
+           float transferFactor = 4;
            float newdust = current.dustLevel;
-           for(int i = 0; i < 8; i++)
+           for(int i = 0; i < 2; i++)
            {
-             Cell cneighbor = getCurrentCellAt(x, y, i);
-             if(cneighbor.exists)
+             Cell c = getNextCellAt(x, y, i);
+             if(c.exists)
              {
                float neighboringDustDiff =
-                 (current.dustLevel - cneighbor.dustLevel) / transferFactor;
+                 (current.dustLevel - c.dustLevel) / transferFactor;
                newdust -= neighboringDustDiff;
                //c.dustLevel += neighboringDustDiff;
+               
              }
            }
            
+           float extraDust = random(1) < (1 / 100.0f) ? 2 : 0;
+           float cleaning = random(1) < (1 / 500.0f) ? 0 : 0;
            
-           float cleaning = random(1) < (1 / 150.0f) ? 2.5 : 0;
-           
-           //newdust += -extraDust + cleaning;
-           newdust += cleaning;
+           newdust += -extraDust + cleaning;
+           //newdust += 1;
            newdust = constrain(newdust, 0, max_clean);
            getNextCellAt(x, y).dustLevel = newdust;
 
         }
+        
+//        //DO
+//        if(current.infection == max_health)
+//        {
+//          //should infect?
+//          if(random(1) < (300 / 100000.0f))
+//          {
+//            //infect this cell!!
+//            nextCells[x][y].infection --;
+//          }
+//          else
+//          {
+//            //perhaps multiply?
+//            if(random(1) < (3 / 100.f))
+//            {
+//              //put a cell in a random adjacent empty spot
+//              int tried = 0;
+//              int randstart = (int) random(0, 8);
+//              boolean found = false;
+//              while(tried < 8 && !found)
+//              {
+//                if(!cellExistsAroundCell(x, y, tried + randstart))
+//                {
+//                  putNewCellAt(x, y, tried + randstart);
+//                  found = true;
+//                }
+//                tried++;
+//              } //finding spot for new cell
+//            } //reproduce
+//          } //not infected 
+//        } //healthy cell
+//        else
+//        {
+//          //not healthy cell
+//          if(current.infection > 1)
+//          {
+//            nextCells[x][y].infection--;
+//          }
+//          else
+//          {
+//            nextCells[x][y].exists = false;
+//            if(random(1) < (30/100.0f))
+//            {
+//              //infect surrounding cells
+//              for(int i = 0; i < 8; i++)
+//              {
+//                Cell c = getNextCellAt(x, y, i);
+//                if(c.exists && c.infection > 1)
+//                {
+//                  c.infection--;
+//                }
+//              }
+//            }
+//          }
+//        }
       } //cell exists
     } //for y
   } //for x
-  
-  copyCells();
-  
-  for(int x = 0; x < XSIZE; x++)
-  {
-    for(int y = 0; y < YSIZE; y++)
-    {
-      Cell current = currentCells[x][y];
-      if(!current.exists)
-      {
-        //empty cell
-        //iterate neighbors ...
-        int randadd = int(random(0, 8));
-        for(int i = 0; i < 8; i++)
-        {
-          if(random(1) < (1/20.0f))
-          {
-            Cell c = getNextCellAt(x, y, i + randadd);
-            if(c.exists)
-            {
-              c.dustLevel -= 0.5;
-              c.dustLevel = constrain(c.dustLevel, 0, max_clean);
-            }
-          }
-        }
-      }
-    }
-  }
   
   copyCells();
 }
@@ -142,7 +170,7 @@ void putNewCellAt(int x, int y, int index)
   c.exists = true;
 }
 
-void getIndexCoordsAt(int x, int y, int index, int[] xy)
+Cell getNextCellAt(int x, int y, int index)
 {
   index = index % 8;
   int targetx = x, targety = y;
@@ -178,23 +206,7 @@ void getIndexCoordsAt(int x, int y, int index, int[] xy)
        break;
   }
   
-  xy[0] = targetx;
-  xy[1] = targety;
-}
-
-Cell getNextCellAt(int x, int y, int index)
-{
-  int[] xy = new int[2];
-  getIndexCoordsAt(x, y, index, xy);
-  Cell c = getNextCellAt(xy[0], xy[1]);
-  return c;
-}
-
-Cell getCurrentCellAt(int x, int y, int index)
-{
-  int[] xy = new int[2];
-  getIndexCoordsAt(x, y, index, xy);
-  Cell c = getCurrentCellAt(xy[0], xy[1]);
+  Cell c = getNextCellAt(targetx, targety);
   return c;
 }
 
@@ -209,13 +221,6 @@ Cell getNextCellAt(int x, int y)
   x = (x + XSIZE) % XSIZE;
   y = (y + YSIZE) % YSIZE;
   return nextCells[x][y];
-}
-
-Cell getCurrentCellAt(int x, int y)
-{
-  x = (x + XSIZE) % XSIZE;
-  y = (y + YSIZE) % YSIZE;
-  return currentCells[x][y];
 }
 
 void update()

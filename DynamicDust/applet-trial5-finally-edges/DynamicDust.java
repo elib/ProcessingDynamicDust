@@ -1,3 +1,22 @@
+import processing.core.*; 
+import processing.xml.*; 
+
+import java.applet.*; 
+import java.awt.Dimension; 
+import java.awt.Frame; 
+import java.awt.event.MouseEvent; 
+import java.awt.event.KeyEvent; 
+import java.awt.event.FocusEvent; 
+import java.awt.Image; 
+import java.io.*; 
+import java.net.*; 
+import java.text.*; 
+import java.util.*; 
+import java.util.zip.*; 
+import java.util.regex.*; 
+
+public class DynamicDust extends PApplet {
+
 
 
 //Dust flow simulation?
@@ -29,14 +48,14 @@ Cell[][] currentCells;
 Cell[][] nextCells;
 int generation;
 
-void initCells()
+public void initCells()
 {
   for(int x = 0; x < XSIZE; x++)
   {
     for(int y = 0; y < YSIZE; y++)
     {
       float inf = max_clean;
-      boolean ex = random(1) < 0.9;
+      boolean ex = random(1) < 0.9f;
       Cell c = new Cell(inf, ex);
       currentCells[x][y] = new Cell(c);
       nextCells[x][y] = new Cell(c);
@@ -44,7 +63,7 @@ void initCells()
   }
 }
 
-void copyCells()
+public void copyCells()
 {
   for(int x = 0; x < XSIZE; x++)
   {
@@ -55,7 +74,7 @@ void copyCells()
   }
 }
 
-void calculateGeneration()
+public void calculateGeneration()
 {
   
   for(int x = 0; x < XSIZE; x++)
@@ -92,7 +111,7 @@ void calculateGeneration()
            }
            
            
-           float cleaning = random(1) < (1 / 150.0f) ? 2.5 : 0;
+           float cleaning = random(1) < (1 / 150.0f) ? 2.5f : 0;
            
            //newdust += -extraDust + cleaning;
            newdust += cleaning;
@@ -115,7 +134,7 @@ void calculateGeneration()
       {
         //empty cell
         //iterate neighbors ...
-        int randadd = int(random(0, 8));
+        int randadd = PApplet.parseInt(random(0, 8));
         for(int i = 0; i < 8; i++)
         {
           if(random(1) < (1/20.0f))
@@ -123,7 +142,7 @@ void calculateGeneration()
             Cell c = getNextCellAt(x, y, i + randadd);
             if(c.exists)
             {
-              c.dustLevel -= 0.5;
+              c.dustLevel -= 0.5f;
               c.dustLevel = constrain(c.dustLevel, 0, max_clean);
             }
           }
@@ -135,14 +154,14 @@ void calculateGeneration()
   copyCells();
 }
 
-void putNewCellAt(int x, int y, int index)
+public void putNewCellAt(int x, int y, int index)
 {
   Cell c = getNextCellAt(x, y, index);
   c.dustLevel = max_clean;
   c.exists = true;
 }
 
-void getIndexCoordsAt(int x, int y, int index, int[] xy)
+public void getIndexCoordsAt(int x, int y, int index, int[] xy)
 {
   index = index % 8;
   int targetx = x, targety = y;
@@ -182,7 +201,7 @@ void getIndexCoordsAt(int x, int y, int index, int[] xy)
   xy[1] = targety;
 }
 
-Cell getNextCellAt(int x, int y, int index)
+public Cell getNextCellAt(int x, int y, int index)
 {
   int[] xy = new int[2];
   getIndexCoordsAt(x, y, index, xy);
@@ -190,7 +209,7 @@ Cell getNextCellAt(int x, int y, int index)
   return c;
 }
 
-Cell getCurrentCellAt(int x, int y, int index)
+public Cell getCurrentCellAt(int x, int y, int index)
 {
   int[] xy = new int[2];
   getIndexCoordsAt(x, y, index, xy);
@@ -198,27 +217,27 @@ Cell getCurrentCellAt(int x, int y, int index)
   return c;
 }
 
-boolean cellExistsAroundCell(int x, int y, int index)
+public boolean cellExistsAroundCell(int x, int y, int index)
 {
   Cell c = getNextCellAt(x, y, index);
   return c.exists;
 }
 
-Cell getNextCellAt(int x, int y)
+public Cell getNextCellAt(int x, int y)
 {
   x = (x + XSIZE) % XSIZE;
   y = (y + YSIZE) % YSIZE;
   return nextCells[x][y];
 }
 
-Cell getCurrentCellAt(int x, int y)
+public Cell getCurrentCellAt(int x, int y)
 {
   x = (x + XSIZE) % XSIZE;
   y = (y + YSIZE) % YSIZE;
   return currentCells[x][y];
 }
 
-void update()
+public void update()
 {
   //if(frameCount % 60 == 0)
   {
@@ -227,7 +246,7 @@ void update()
   }
 }
 
-void drawCells()
+public void drawCells()
 {
   //sizes
   float wid = width / ((float)XSIZE);
@@ -240,18 +259,18 @@ void drawCells()
       Cell current = currentCells[x][y];
       if(current.exists)
       {
-        int thegray = int( 255 / max_clean);
+        int thegray = PApplet.parseInt( 255 / max_clean);
         ellipseMode(CORNER);
         noStroke();
-        fill(int(thegray * current.dustLevel));
-        float factor = 0.8;
+        fill(PApplet.parseInt(thegray * current.dustLevel));
+        float factor = 0.8f;
         ellipse(x*wid, y*hei, wid * factor, hei * factor);
       }
     } 
   }
 }
 
-void setup () 
+public void setup () 
 {
   size(500, 500);
   smooth();
@@ -265,7 +284,7 @@ void setup ()
   initCells();
 }
 
-void draw ()
+public void draw ()
 {
   background(0);
   
@@ -275,3 +294,7 @@ void draw ()
   
 }
 
+  static public void main(String args[]) {
+    PApplet.main(new String[] { "--bgcolor=#F0F0F0", "DynamicDust" });
+  }
+}

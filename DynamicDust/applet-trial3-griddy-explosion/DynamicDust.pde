@@ -77,7 +77,7 @@ void calculateGeneration()
            
            //apply DANIEL THEORY
            //float neighboringDustDiff = 0;
-           float transferFactor = 50;
+           float transferFactor = 4.8;
            float newdust = current.dustLevel;
            for(int i = 0; i < 8; i++)
            {
@@ -91,46 +91,73 @@ void calculateGeneration()
              }
            }
            
+           float extraDust = random(1) < (1 / 100.0f) ? 2 : 0;
+           float cleaning = random(1) < (1 / 500.0f) ? 0 : 0;
            
-           float cleaning = random(1) < (1 / 150.0f) ? 2.5 : 0;
-           
-           //newdust += -extraDust + cleaning;
-           newdust += cleaning;
+           newdust += -extraDust + cleaning;
+           //newdust += 1;
            newdust = constrain(newdust, 0, max_clean);
            getNextCellAt(x, y).dustLevel = newdust;
 
         }
+        
+//        //DO
+//        if(current.infection == max_health)
+//        {
+//          //should infect?
+//          if(random(1) < (300 / 100000.0f))
+//          {
+//            //infect this cell!!
+//            nextCells[x][y].infection --;
+//          }
+//          else
+//          {
+//            //perhaps multiply?
+//            if(random(1) < (3 / 100.f))
+//            {
+//              //put a cell in a random adjacent empty spot
+//              int tried = 0;
+//              int randstart = (int) random(0, 8);
+//              boolean found = false;
+//              while(tried < 8 && !found)
+//              {
+//                if(!cellExistsAroundCell(x, y, tried + randstart))
+//                {
+//                  putNewCellAt(x, y, tried + randstart);
+//                  found = true;
+//                }
+//                tried++;
+//              } //finding spot for new cell
+//            } //reproduce
+//          } //not infected 
+//        } //healthy cell
+//        else
+//        {
+//          //not healthy cell
+//          if(current.infection > 1)
+//          {
+//            nextCells[x][y].infection--;
+//          }
+//          else
+//          {
+//            nextCells[x][y].exists = false;
+//            if(random(1) < (30/100.0f))
+//            {
+//              //infect surrounding cells
+//              for(int i = 0; i < 8; i++)
+//              {
+//                Cell c = getNextCellAt(x, y, i);
+//                if(c.exists && c.infection > 1)
+//                {
+//                  c.infection--;
+//                }
+//              }
+//            }
+//          }
+//        }
       } //cell exists
     } //for y
   } //for x
-  
-  copyCells();
-  
-  for(int x = 0; x < XSIZE; x++)
-  {
-    for(int y = 0; y < YSIZE; y++)
-    {
-      Cell current = currentCells[x][y];
-      if(!current.exists)
-      {
-        //empty cell
-        //iterate neighbors ...
-        int randadd = int(random(0, 8));
-        for(int i = 0; i < 8; i++)
-        {
-          if(random(1) < (1/20.0f))
-          {
-            Cell c = getNextCellAt(x, y, i + randadd);
-            if(c.exists)
-            {
-              c.dustLevel -= 0.5;
-              c.dustLevel = constrain(c.dustLevel, 0, max_clean);
-            }
-          }
-        }
-      }
-    }
-  }
   
   copyCells();
 }

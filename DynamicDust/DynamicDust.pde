@@ -208,15 +208,28 @@ boolean cellExistsAroundCell(int x, int y, int index)
 
 Cell getNextCellAt(int x, int y)
 {
-  x = (x + XSIZE) % XSIZE;
-  y = (y + YSIZE) % YSIZE;
+  if((x < 0 || x >= XSIZE)
+    || (y < 0 || y >= XSIZE))
+    {
+      return new Cell(max_clean, true);
+    }
+  
+  //x = (x + XSIZE) % XSIZE;
+  //y = (y + YSIZE) % YSIZE;
   return nextCells[x][y];
 }
 
 Cell getCurrentCellAt(int x, int y)
 {
-  x = (x + XSIZE) % XSIZE;
-  y = (y + YSIZE) % YSIZE;
+    if((x < 0 || x >= XSIZE)
+    || (y < 0 || y >= XSIZE))
+    {
+      return new Cell(max_clean, true);
+    }
+  
+  
+  //x = (x + XSIZE) % XSIZE;
+  //y = (y + YSIZE) % YSIZE;
   return currentCells[x][y];
 }
 

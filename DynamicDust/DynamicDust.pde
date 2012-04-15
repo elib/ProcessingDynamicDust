@@ -3,6 +3,10 @@
 //Dust flow simulation?
 
 float max_clean;
+float over_clean;
+int cleaned = 0;
+
+int livecells = 0;
 
 class Cell
 {
@@ -23,7 +27,7 @@ class Cell
 }
 
 int XSIZE = 100;
-int YSIZE = 100;
+int YSIZE = XSIZE;
 
 Cell[][] currentCells;
 Cell[][] nextCells;
@@ -36,8 +40,8 @@ void initCells()
   mapReading = loadImage("Map-Trial-1.png");
   int imgwid = mapReading.width;
   int imghei = mapReading.height;
-  int blockx = imgwid / XSIZE;
-  int blocky = imghei / YSIZE;
+  float blockx = imgwid / ((float) XSIZE);
+  float blocky = imghei / ((float)YSIZE);
   mapReading.loadPixels();
   
   noiseSeed(5);
@@ -73,7 +77,8 @@ void copyCells()
 
 void calculateGeneration()
 {
-  
+  generation ++;
+  livecells = 0;
   for(int x = 0; x < XSIZE; x++)
   {
     for(int y = 0; y < YSIZE; y++)
@@ -107,12 +112,16 @@ void calculateGeneration()
              }
            }
            
-           
-           float cleaning = random(1) < (1 / 200.0f) ? 2.5 : 0;
+           float cleaning = 0;
+           if(random(1) < (1 / 10000.0f))
+           {
+             cleaning = over_clean;
+             cleaned++;
+           }
            
            //newdust += -extraDust + cleaning;
            newdust += cleaning;
-           newdust = constrain(newdust, 0, max_clean);
+           newdust = constrain(newdust, 0, over_clean);
            getNextCellAt(x, y).dustLevel = newdust;
 
         }
@@ -140,10 +149,14 @@ void calculateGeneration()
             if(c.exists)
             {
               c.dustLevel -= 0.5;
-              c.dustLevel = constrain(c.dustLevel, 0, max_clean);
+              c.dustLevel = constrain(c.dustLevel, 0, over_clean);
             }
           }
         }
+      }
+      else //live cell
+      {
+        livecells ++;
       }
     }
   }
@@ -270,9 +283,17 @@ void drawCells()
       if(current.exists)
       {
         int thegray = int( 255 / max_clean);
+        
         ellipseMode(CORNER);
         noStroke();
-        fill(int(thegray * current.dustLevel));
+        if(current.dustLevel > max_clean)
+        {
+          fill(color(0,0,255));
+        }
+        else
+        {
+          fill(int(thegray * current.dustLevel));
+        }
         float factor = 0.8;
         ellipse(x*wid, y*hei, wid * factor, hei * factor);
       }
@@ -290,6 +311,7 @@ void setup ()
   currentCells = new Cell[XSIZE][YSIZE];
   nextCells = new Cell[XSIZE][YSIZE];
   max_clean = 10;
+  over_clean = 50;
 
   //make cells  
   initCells();
@@ -303,5 +325,12 @@ void draw ()
   
   drawCells();
   
+  if(frameCount % 60 == 0)
+  {
+    println("Generations: " + generation + ", cleaned: " + cleaned
+      + ", cleaning per gen: " + (cleaned / ((float)generation))
+      + ", live cells: " + livecells
+      + ", cleaning per gen per live cell: " + (cleaned / ((float)generation * livecells)));
+  }
 }
 

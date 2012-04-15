@@ -31,6 +31,15 @@ int generation;
 
 void initCells()
 {
+  //image
+  PImage mapReading;
+  mapReading = loadImage("Map-Trial-1.png");
+  int imgwid = mapReading.width;
+  int imghei = mapReading.height;
+  int blockx = imgwid / XSIZE;
+  int blocky = imghei / YSIZE;
+  mapReading.loadPixels();
+  
   noiseSeed(5);
   noiseDetail(8, .4);
   for(int x = 0; x < XSIZE; x++)
@@ -38,7 +47,12 @@ void initCells()
     for(int y = 0; y < YSIZE; y++)
     {
       float inf = max_clean;
-      boolean ex = noise(x/5.0f, y/10.0f) < 0.52;
+      //boolean ex = noise(x/5.0f, y/10.0f) < 0.52;
+      //get pixel from image map
+      int px_x = int((x + 0.5) * blockx);
+      int px_y = int((y + 0.5) * blocky);
+      color col = mapReading.pixels[px_x + imgwid * px_y];
+      boolean ex = brightness(col) > 0.5;
       Cell c = new Cell(inf, ex);
       currentCells[x][y] = new Cell(c);
       nextCells[x][y] = new Cell(c);
@@ -270,6 +284,7 @@ void setup ()
 {
   size(500, 500);
   smooth();
+  
   generation = 0;
   
   currentCells = new Cell[XSIZE][YSIZE];

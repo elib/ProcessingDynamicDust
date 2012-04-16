@@ -111,9 +111,10 @@ void calculateGeneration()
                //c.dustLevel += neighboringDustDiff;
              }
            }
-           
+
            float cleaning = 0;
-           if(random(1) < (1 / 10000.0f))
+           //increase chance of cleaning dusty cell
+           if(random(1) < (1 / (500.0f * pow(newdust, 2))))
            {
              cleaning = over_clean;
              cleaned++;
@@ -311,7 +312,7 @@ void setup ()
   currentCells = new Cell[XSIZE][YSIZE];
   nextCells = new Cell[XSIZE][YSIZE];
   max_clean = 10;
-  over_clean = 50;
+  over_clean = 100;
 
   //make cells  
   initCells();

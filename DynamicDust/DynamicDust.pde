@@ -5,6 +5,9 @@
 float max_clean;
 float over_clean;
 int cleaned = 0;
+int deathed = 0;
+
+PrintWriter dataWriter;
 
 int livecells = 0;
 
@@ -114,7 +117,7 @@ void calculateGeneration()
 
            float cleaning = 0;
            //increase chance of cleaning dusty cell
-           if(random(1) < (1 / (500.0f * pow(newdust, 2))))
+           if(random(1) < (1 / (100.0f * pow(newdust, 2))))
            {
              cleaning = over_clean;
              cleaned++;
@@ -307,6 +310,9 @@ void setup ()
   size(500, 500);
   smooth();
   
+  dataWriter = createWriter("data_" + year() + "-" + month() + "-" + day() + "_" + hour() + "-" + minute() + "-" + second() +  ".txt");
+  dataWriter.println("Generation\tLiveCells\tCleanedCells");
+  
   generation = 0;
   
   currentCells = new Cell[XSIZE][YSIZE];
@@ -326,12 +332,28 @@ void draw ()
   
   drawCells();
   
+  dataWriter.println("" 
+        + generation
+        + "\t" + livecells
+        + "\t" + cleaned);
+  
   if(frameCount % 60 == 0)
   {
-    println("Generations: " + generation + ", cleaned: " + cleaned
-      + ", cleaning per gen: " + (cleaned / ((float)generation))
+    
+    dataWriter.flush();
+    
+    int newDeathed = XSIZE * YSIZE - livecells;
+    int diffDeathed = newDeathed - deathed;
+    deathed = newDeathed;
+    
+    println("**************\r\n"
+      + "Generations: " + generation + ", cleaned: " + cleaned
+      + "\r\n"
+      + "cleaning per gen: " + (cleaned / ((float)generation))
       + ", live cells: " + livecells
-      + ", cleaning per gen per live cell: " + (cleaned / ((float)generation * livecells)));
+//      + ", cleaning per gen per live cell: " + (cleaned / ((float)generation * livecells))
+      + "\r\n"
+      + "New dead: " + diffDeathed
+      + ", Dead per generation: " + newDeathed / ((float)generation));
   }
 }
-

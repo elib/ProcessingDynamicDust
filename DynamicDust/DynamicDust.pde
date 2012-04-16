@@ -2,13 +2,22 @@
 
 //Dust flow simulation?
 
-float max_clean;
-float over_clean;
+float max_clean = 10;
+float over_clean = 200;
 int cleaned = 0;
 int deathed = 0;
 
-PrintWriter dataWriter;
+int XSIZE = 100;
+int YSIZE = XSIZE;
 
+//dust dynamics
+float transferFactor = 50;
+float baseDustCleaningChance = 500.0f;
+float baseDustGenerationChance = 18.0f;
+
+
+//extras
+PrintWriter dataWriter;
 int livecells = 0;
 
 class Cell
@@ -29,9 +38,6 @@ class Cell
   }
 }
 
-int XSIZE = 100;
-int YSIZE = XSIZE;
-
 Cell[][] currentCells;
 Cell[][] nextCells;
 int generation;
@@ -47,15 +53,11 @@ void initCells()
   float blocky = imghei / ((float)YSIZE);
   mapReading.loadPixels();
   
-  noiseSeed(5);
-  noiseDetail(8, .4);
   for(int x = 0; x < XSIZE; x++)
   {
     for(int y = 0; y < YSIZE; y++)
     {
       float inf = max_clean;
-      //boolean ex = noise(x/5.0f, y/10.0f) < 0.52;
-      //get pixel from image map
       int px_x = int((x + 0.5) * blockx);
       int px_y = int((y + 0.5) * blocky);
       color col = mapReading.pixels[px_x + imgwid * px_y];
@@ -101,7 +103,7 @@ void calculateGeneration()
            
            //apply DANIEL THEORY
            //float neighboringDustDiff = 0;
-           float transferFactor = 50;
+           
            float newdust = current.dustLevel;
            for(int i = 0; i < 8; i++)
            {
@@ -117,7 +119,7 @@ void calculateGeneration()
 
            float cleaning = 0;
            //increase chance of cleaning dusty cell
-           if(random(1) < (1 / (100.0f * pow(newdust, 2))))
+           if(random(1) < (1 / (baseDustCleaningChance * pow(newdust, 2))))
            {
              cleaning = over_clean;
              cleaned++;
@@ -147,7 +149,7 @@ void calculateGeneration()
         int randadd = int(random(0, 8));
         for(int i = 0; i < 8; i++)
         {
-          if(random(1) < (1/18.0f))
+          if(random(1) < (1/baseDustGenerationChance))
           {
             Cell c = getNextCellAt(x, y, i + randadd);
             if(c.exists)
@@ -317,8 +319,7 @@ void setup ()
   
   currentCells = new Cell[XSIZE][YSIZE];
   nextCells = new Cell[XSIZE][YSIZE];
-  max_clean = 10;
-  over_clean = 100;
+
 
   //make cells  
   initCells();

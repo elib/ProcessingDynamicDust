@@ -10,6 +10,8 @@ int deathed = 0;
 int XSIZE = 100;
 int YSIZE = XSIZE;
 
+PVector builderLocation = new PVector(XSIZE/4, 3 * YSIZE / 4);
+
 //dust dynamics
 float transferFactor = 50;
 float baseDustCleaningChance = 500.0f;
@@ -307,6 +309,22 @@ void drawCells()
   }
 }
 
+void drawBuilders()
+{
+  noFill();
+  rectMode(CENTER);
+  
+  strokeWeight(3);
+  stroke(20);
+  rect(builderLocation.x * width / XSIZE, builderLocation.y * height / YSIZE,
+        10, 10);
+
+  strokeWeight(1);
+  stroke(color(50, 100, 50));
+  rect(builderLocation.x * width / XSIZE, builderLocation.y * height / YSIZE,
+        10, 10);
+}
+
 void setup () 
 {
   size(500, 500);
@@ -332,6 +350,8 @@ void draw ()
   update();
   
   drawCells();
+  
+  drawBuilders();
   
   dataWriter.println("" 
         + generation

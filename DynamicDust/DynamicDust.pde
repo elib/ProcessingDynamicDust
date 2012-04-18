@@ -12,11 +12,12 @@ int YSIZE = XSIZE;
 
 PVector builderLocation = new PVector(XSIZE/4, 3 * YSIZE / 4);
 
+int maxBuilders = 10;
+
 //dust dynamics
 float transferFactor = 50;
 float baseDustCleaningChance = 500.0f;
 float baseDustGenerationChance = 18.0f;
-
 
 //extras
 PrintWriter dataWriter;
@@ -40,9 +41,158 @@ class Cell
   }
 }
 
+int sign(int in)
+{
+  return in / abs(in);
+}
+
+class Builder
+{
+  boolean active; //is currently moving/building
+  PVector location;
+  PVector targetLocation;
+  boolean goingOut; //going to the site or returning to base?
+  
+  int movementSpeed;
+  int  generationsWandering;
+  int generationsToBuild;
+  
+  Builder()
+  {
+    active = false;
+    goingOut = true;
+    location = new PVector(0,0);
+    targetLocation = new PVector(0,0);
+    movementSpeed = 20;
+    generationsWandering = 0;
+    generationsToBuild = 1;
+  }
+  
+  void activate(PVector newTarget)
+  {
+    active = true;
+    goingOut = true;
+    targetLocation = newTarget;
+    location = new PVector(builderLocation.x, builderLocation.y);
+    //affect speed according to time spent wandering
+    movementSpeed = int(20 * 100 / ((float)(generationsWandering + 10)));
+    movementSpeed = constrain(movementSpeed, 1, 20);
+  }
+  
+  void update()
+  {
+    if(!active)
+      return;
+    
+    generationsWandering++;
+    
+    PVector actualTarget;
+      
+    //for now, move gridwise, without respecting dead cells.
+    if(goingOut)
+    {
+      //move to site
+      actualTarget = new PVector(targetLocation.x, targetLocation.y);
+    }
+    else
+    {
+      //back to base
+      actualTarget = new PVector(builderLocation.x, builderLocation.y);
+    }
+    
+    //update location according to speed
+    //choose furthest distance (x,y)
+    PVector movementVector = new PVector(actualTarget.x, actualTarget.y);
+    movementVector.sub(location);
+    if(abs(movementVector.x) > abs(movementVector.y))
+    {
+      if(movementSpeed >= abs(movementVector.x))
+      {
+        location.x += movementVector.x;
+      }
+      else
+      {
+        location.x += sign(int(movementVector.x)) * movementSpeed;
+      }
+    }
+    else
+    {
+      if(movementSpeed >= abs(movementVector.y))
+      {
+        location.y += movementVector.y;
+      }
+      else
+      {
+        location.y += sign(int(movementVector.y)) * movementSpeed;
+      }
+    }
+    
+    //check if reached destination
+    if(location.x == actualTarget.x && location.y == actualTarget.y)
+    {
+      if(goingOut)
+      {
+        //got to dusty location!
+        //activate CLEAN
+        Cell cellToClean = getNextCellAt(int(location.x), int(location.y));
+        if(cellToClean.exists)
+        {
+          //only clean alive cells
+          cleaned++;
+          cellToClean.dustLevel = over_clean;
+        }
+        //go back to depot now
+        goingOut = false;
+      }
+      else
+      {
+        active = false;
+      }
+    }
+  }
+}
+
+void launchBuilder(int x, int y)
+{
+  //look for an available builder
+  //launch it towards the dusty area
+  int i = 0;
+  while(i < maxBuilders && builders[i].active)
+  {
+    i++;
+  }
+  
+  if(i == maxBuilders)
+  {
+    println("Out of builders!!!!");
+    return; //none available
+  }
+    
+  builders[i].activate(new PVector(x, y));
+}
+
+void updateBuilders()
+{
+  for(int i = 0; i < maxBuilders; i++)
+  {
+    builders[i].update();
+  }
+}
+
+Builder[] builders;
 Cell[][] currentCells;
 Cell[][] nextCells;
 int generation;
+
+void initBuilders()
+{
+  builders = new Builder[maxBuilders];
+  
+  for(int i = 0; i < maxBuilders; i++)
+  {
+    builders[i] = new Builder();
+  }
+}
 
 void initCells()
 {
@@ -123,8 +273,9 @@ void calculateGeneration()
            //increase chance of cleaning dusty cell
            if(random(1) < (1 / (baseDustCleaningChance * pow(newdust, 2))))
            {
-             cleaning = over_clean;
-             cleaned++;
+             launchBuilder(x, y);
+             //cleaning = over_clean;
+             //cleaned++;
            }
            
            //newdust += -extraDust + cleaning;
@@ -168,6 +319,8 @@ void calculateGeneration()
       }
     }
   }
+  
+  updateBuilders();
   
   copyCells();
 }
@@ -270,11 +423,7 @@ Cell getCurrentCellAt(int x, int y)
 
 void update()
 {
-  //if(frameCount % 60 == 0)
-  {
-    //next generation
-    calculateGeneration();
-  }
+  calculateGeneration();
 }
 
 void drawCells()
@@ -323,6 +472,18 @@ void drawBuilders()
   stroke(color(50, 100, 50));
   rect(builderLocation.x * width / XSIZE, builderLocation.y * height / YSIZE,
         10, 10);
+        
+        
+   for(int i = 0; i < maxBuilders; i++)
+   {
+     if(builders[i].active)
+     {
+       strokeWeight(2);
+       stroke(color(255, 255, 0));
+       rect(builders[i].location.x * width / XSIZE, builders[i].location.y * height / YSIZE,
+        5, 5);
+     }
+   }
 }
 
 void setup () 
@@ -341,6 +502,9 @@ void setup ()
 
   //make cells  
   initCells();
+  
+  //make builders
+  initBuilders();
 }
 
 void draw ()

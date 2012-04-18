@@ -1,4 +1,4 @@
-
+boolean shouldOutput = false;
 
 //Dust flow simulation?
 
@@ -20,7 +20,7 @@ float baseDustCleaningChance = 500.0f;
 float baseDustGenerationChance = 18.0f;
 
 //extras
-PrintWriter dataWriter;
+  PrintWriter dataWriter;
 int livecells = 0;
 
 class Cell
@@ -491,8 +491,11 @@ void setup ()
   size(500, 500);
   smooth();
   
-  dataWriter = createWriter("data_" + year() + "-" + month() + "-" + day() + "_" + hour() + "-" + minute() + "-" + second() +  ".txt");
-  dataWriter.println("Generation\tLiveCells\tCleanedCells");
+  if(shouldOutput)
+  {
+    dataWriter = createWriter("data_" + year() + "-" + month() + "-" + day() + "_" + hour() + "-" + minute() + "-" + second() +  ".txt");
+    dataWriter.println("Generation\tLiveCells\tCleanedCells");
+  }
   
   generation = 0;
   
@@ -516,16 +519,22 @@ void draw ()
   drawCells();
   
   drawBuilders();
-  
+ 
+ if(shouldOutput)
+ {
   dataWriter.println("" 
         + generation
         + "\t" + livecells
         + "\t" + cleaned);
+ }
   
   if(frameCount % 60 == 0)
   {
     
-    dataWriter.flush();
+    if(shouldOutput)
+    {
+      dataWriter.flush();
+    }
     
     int newDeathed = XSIZE * YSIZE - livecells;
     int diffDeathed = newDeathed - deathed;

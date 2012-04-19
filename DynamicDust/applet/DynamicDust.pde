@@ -1,4 +1,4 @@
-boolean shouldOutput = true;
+boolean shouldOutput = false;
 
 //Dust flow simulation?
 
@@ -13,8 +13,6 @@ int YSIZE = XSIZE;
 PVector builderLocation = new PVector(XSIZE/4, 3 * YSIZE / 4);
 
 int maxBuilders = 10;
-
-ArrayList skipCleanList;
 
 //dust dynamics
 float transferFactor = 50;
@@ -137,16 +135,11 @@ class Builder
         //got to dusty location!
         //activate CLEAN
         Cell cellToClean = getNextCellAt(int(location.x), int(location.y));
-        removeFromSkipList(int(location.x), int(location.y));
         if(cellToClean.exists)
         {
           //only clean alive cells
           cleaned++;
           cellToClean.dustLevel = over_clean;
-        }
-        else
-        {
-          println("Whoops! Too late!!!!!");
         }
         //go back to depot now
         goingOut = false;
@@ -156,40 +149,6 @@ class Builder
         active = false;
       }
     }
-  }
-}
-
-boolean checkAndAddNoCleanList(int x, int y)
-{
-  int i = 0;
-  while(i < skipCleanList.size())
- {
-   PVector p = (PVector)skipCleanList.get(i);
-   if(int(p.x) == x && int(p.y) == y)
-   {
-     println("*********** ALREADY GOING TO CLEAN THAT (" + skipCleanList.size() + " no-cleans)");
-     return false;
-   }
-   
-   i++;
- }
- 
- skipCleanList.add(new PVector(x, y));
- return true;
-}
-
-void removeFromSkipList(int x, int y)
-{
-  int i = 0;
-  while(i < skipCleanList.size())
-  {
-   PVector p = (PVector)skipCleanList.get(i);
-   if(int(p.x) == x && int(p.y) == y)
-   {
-     skipCleanList.remove(p);
-     return;
-   }   
-   i++;
   }
 }
 
@@ -208,12 +167,8 @@ void launchBuilder(int x, int y)
     println("Out of builders!!!!");
     return; //none available
   }
-  
-  //we have a builder, but is it necessary to send someone there?
-  if(checkAndAddNoCleanList(x, y))
-  {    
-    builders[i].activate(new PVector(x, y));
-  }
+    
+  builders[i].activate(new PVector(x, y));
 }
 
 void updateBuilders()
@@ -536,8 +491,6 @@ void setup ()
   size(500, 500);
   smooth();
   
-  skipCleanList = new ArrayList();
-  
   if(shouldOutput)
   {
     dataWriter = createWriter("data_" + year() + "-" + month() + "-" + day() + "_" + hour() + "-" + minute() + "-" + second() +  ".txt");
@@ -587,7 +540,6 @@ void draw ()
     int diffDeathed = newDeathed - deathed;
     deathed = newDeathed;
     
-    /*
     println("**************\r\n"
       + "Generations: " + generation + ", cleaned: " + cleaned
       + "\r\n"
@@ -597,6 +549,5 @@ void draw ()
       + "\r\n"
       + "New dead: " + diffDeathed
       + ", Dead per generation: " + newDeathed / ((float)generation));
-      */
   }
 }
